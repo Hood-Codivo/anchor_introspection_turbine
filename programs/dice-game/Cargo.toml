@@ -19,4 +19,8 @@ idl-build = ["anchor-lang/idl-build"]
 
 [dependencies]
 anchor-lang = "0.31.1"
+solana-ed25519-program = "2"
+solana-instructions-sysvar = "2"
+solana-sdk-ids = "2"
+solana-sha256-hasher = "2"
 

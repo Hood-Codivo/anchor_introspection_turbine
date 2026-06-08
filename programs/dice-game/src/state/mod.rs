@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-pub const HOUSE_EDGE_BASIC_POINTS: U16 = 150;
+pub const HOUSE_EDGE_BASIS_POINTS: u16 = 150;
 pub const MIN_BET_LAMPORTS: u64 = 100_000_000; // 0.1 SOL
 pub const MIN_ROLL: u8 = 1;
 pub const MAX_ROLL: u8 = 99;
