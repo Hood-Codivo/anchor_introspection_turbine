@@ -43,6 +43,18 @@ describe("dice-game", () => {
     ],
     program.programId,
   )[0];
+
+  const refundSeed = new BN(randomBytes(16));
+  const refundBet = PublicKey.findProgramAddressSync(
+    [
+      Buffer.from("bet"),
+      vault.toBuffer(),
+      player.publicKey.toBuffer(),
+      refundSeed.toBuffer("le", 16),
+    ],
+    program.programId,
+  )[0];
+
   it("Airdrop", async () => {
     await Promise.all(
       [house, player].map(async (key) => {
@@ -130,6 +142,50 @@ describe("dice-game", () => {
       console.error(error);
       throw error;
     }
+  });
+
+  it("Place a bet for refund", async () => {
+    await program.methods
+      .placeBet(refundSeed, BET_ROLL, new BN(BET_AMOUNT.toString()))
+      .accountsStrict({
+        player: player.publicKey,
+        house: house.publicKey,
+        vault,
+        bet: refundBet,
+        systemProgram: SystemProgram.programId,
+      })
+      .signers([player])
+      .rpc()
+      .then(confirmTx);
+  });
+
+  it("Refund a bet", async () => {
+    const balanceBefore = await anchor
+      .getProvider()
+      .connection.getBalance(player.publicKey, "confirmed");
+
+    await program.methods
+      .refundBet()
+      .accountsStrict({
+        player: player.publicKey,
+        house: house.publicKey,
+        vault,
+        bet: refundBet,
+        systemProgram: SystemProgram.programId,
+      })
+      .signers([player])
+      .rpc()
+      .then(confirmTx);
+
+    const balanceAfter = await anchor
+      .getProvider()
+      .connection.getBalance(player.publicKey, "confirmed");
+
+    assert.isAbove(
+      balanceAfter,
+      balanceBefore,
+      "Player balance should increase after refund",
+    );
   });
 });
 
