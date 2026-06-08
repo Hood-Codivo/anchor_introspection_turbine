@@ -16,7 +16,7 @@ import { createHash, randomBytes } from "crypto";
 import { BN } from "bn.js";
 
 const BET_ROLL = 50; // we bet no 50
-const BET_AMOUNT = BigInt(LAMPORTS_PER_SOL / 100); // we bet 0.01 SOL
+const BET_AMOUNT = BigInt(LAMPORTS_PER_SOL / 10); // we bet 0.1 SOL (minimum allowed)
 const HOUSE_EDGE_BASIS_POINTS = BigInt(150); // 1.5%
 
 import { assert } from "chai";

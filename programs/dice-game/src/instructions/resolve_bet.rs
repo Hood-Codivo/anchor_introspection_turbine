@@ -3,10 +3,21 @@ use anchor_lang::{
     system_program::{transfer, Transfer},
 };
 
-use solana_ed25519_program::{
-    Ed25519SignatureOffsets, PUBKEY_SERIALIZED_SIZE, SIGNATURE_OFFSETS_SERIALIZED_SIZE,
-    SIGNATURE_OFFSETS_START, SIGNATURE_SERIALIZED_SIZE,
-};
+const PUBKEY_SERIALIZED_SIZE: usize = 32;
+const SIGNATURE_SERIALIZED_SIZE: usize = 64;
+const SIGNATURE_OFFSETS_SERIALIZED_SIZE: usize = 14;
+const SIGNATURE_OFFSETS_START: usize = 2;
+
+#[derive(Default, Clone, Copy)]
+struct Ed25519SignatureOffsets {
+    pub signature_offset: u16,
+    pub signature_instruction_index: u16,
+    pub public_key_offset: u16,
+    pub public_key_instruction_index: u16,
+    pub message_data_offset: u16,
+    pub message_data_size: u16,
+    pub message_instruction_index: u16,
+}
 
 use solana_instructions_sysvar::{load_current_index_checked, load_instruction_at_checked};
 use solana_sha256_hasher::hash;
@@ -18,8 +29,10 @@ use crate::{
 
 #[derive(Accounts)]
 pub struct ResolveBet<'info> {
+    /// CHECK: Verified via the Ed25519 signature — the house signed the bet data with this key.
     #[account(mut)]
     pub house: UncheckedAccount<'info>,
+    /// CHECK: Recipient of the payout; identity is enforced by the `has_one = player` constraint on the bet account.
     #[account(mut)]
     pub player: UncheckedAccount<'info>,
 
@@ -37,6 +50,7 @@ pub struct ResolveBet<'info> {
         bump = bet.bump
     )]
     pub bet: Account<'info, Bet>,
+    /// CHECK: Read-only instructions sysvar; address is verified by the constraint below.
     #[account(
         address = solana_sdk_ids::sysvar::instructions::ID
     )]
